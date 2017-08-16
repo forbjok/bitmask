@@ -95,7 +95,7 @@ namespace Benchmark
                 {
                     var bit = random.Next(0, 31);
 
-                    enumComponentMask |= (ComponentType) bit;
+                    enumComponentMask |= (ComponentType) (1 << bit);
                     componentBitMask |= new BitMask(bits: new[] {bit});
                     intComponentMask |= (1 << bit);
                 }
