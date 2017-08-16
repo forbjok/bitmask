@@ -11,47 +11,46 @@ namespace BitMasks
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskInts = 2;
-        private const int BitsPerInt = 8 * sizeof(int);
+        private const int MaskLongs = 1;
+        private const int BitsPerLong = 8 * sizeof(long);
 
-        private fixed int _ints[MaskInts];
+        private fixed long _longs[MaskLongs];
 
         public BitMask(int[] bits)
         {
-            fixed (int* ints = _ints)
+            fixed (long* longs = _longs)
             {
                 for (int i = 0; i < bits.Length; ++i)
                 {
                     ref var bit = ref bits[i];
 
-                    int intIndex = bit / BitsPerInt;
-                    int bitIndex = bit % BitsPerInt;
-                    int mask = 1 << bitIndex;
+                    int intIndex = bit / BitsPerLong;
+                    int bitIndex = bit % BitsPerLong;
+                    long mask = (long) 1 << bitIndex;
 
-                    ints[intIndex] |= mask;
+                    longs[intIndex] |= mask;
                 }
             }
         }
 
-        private static BitMask CreateWithInts(int[] ints)
+        private BitMask(long[] data)
         {
-            var bitMask = new BitMask();
-
-            for (int i = 0; i < MaskInts; ++i)
+            fixed (long* longs = _longs)
             {
-                bitMask._ints[i] = ints[i];
+                for (int i = 0; i < MaskLongs; ++i)
+                {
+                    longs[i] = data[i];
+                }
             }
-
-            return bitMask;
         }
 
         public bool Equals(BitMask other)
         {
-            fixed (int* ints = _ints)
+            fixed (long* longs = _longs)
             {
-                for (int i = 0; i < MaskInts; ++i)
+                for (int i = 0; i < MaskLongs; ++i)
                 {
-                    if (ints[i] != other._ints[i])
+                    if (longs[i] != other._longs[i])
                         return false;
                 }
             }
@@ -79,49 +78,49 @@ namespace BitMasks
 
         public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newInts = new int[MaskInts];
+            var newLongs = new long[MaskLongs];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskLongs; ++i)
             {
-                newInts[i] = mask1._ints[i] & mask2._ints[i];
+                newLongs[i] = mask1._longs[i] & mask2._longs[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(data: newLongs);
         }
 
         public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newInts = new int[MaskInts];
+            var newLongs = new long[MaskLongs];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskLongs; ++i)
             {
-                newInts[i] = mask1._ints[i] | mask2._ints[i];
+                newLongs[i] = mask1._longs[i] | mask2._longs[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(data: newLongs);
         }
 
         public static BitMask operator ~(BitMask mask)
         {
-            var newInts = new int[MaskInts];
+            var newLongs = new long[MaskLongs];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskLongs; ++i)
             {
-                newInts[i] = ~mask._ints[i];
+                newLongs[i] = ~mask._longs[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(data: newLongs);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(BitMask mask)
         {
-            fixed (int* ints = _ints)
+            fixed (long* longs = _longs)
             {
-                int* myInts = ints;
-                int* maskInts = mask._ints;
+                long* myInts = longs;
+                long* maskInts = mask._longs;
 
-                for (int i = 0; i < MaskInts; ++i)
+                for (int i = 0; i < MaskLongs; ++i)
                 {
                     if ((*myInts & *maskInts) != *maskInts)
                         return false;
