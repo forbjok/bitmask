@@ -59,6 +59,10 @@ namespace Benchmark
         private BitMask[] _componentBitMasks;
         private BitMask _wantedBitMask;
 
+        private int[] _intComponentMasks;
+        private int _wantedIntMask;
+
+
         public BenchmarkImplementation()
         {
             _results = new int[NumberOfOperations];
@@ -70,17 +74,22 @@ namespace Benchmark
             _wantedEnumMask = ComponentType.None;
             _wantedBitMask = new BitMask(bits: WantedBits);
 
+            _intComponentMasks = new int[NumberOfOperations];
+            _wantedIntMask = 0;
+
             var random = new Random();
 
             for (int i = 0; i < WantedBits.Length; ++i)
             {
                 _wantedEnumMask |= (ComponentType) WantedBits[i];
+                _wantedIntMask |= WantedBits[i];
             }
 
             for (int i = 0; i < NumberOfOperations; ++i)
             {
                 ComponentType enumComponentMask = ComponentType.None;
                 BitMask componentBitMask = BitMask.None;
+                int intComponentMask = 0;
 
                 for (int b = 0; b < NumberOfBits; ++b)
                 {
@@ -88,10 +97,12 @@ namespace Benchmark
 
                     enumComponentMask |= (ComponentType) bit;
                     componentBitMask |= new BitMask(bits: new[] {bit});
+                    intComponentMask |= (1 << bit);
                 }
 
                 _enumComponentMasks[i] = enumComponentMask;
                 _componentBitMasks[i] = componentBitMask;
+                _intComponentMasks[i] = intComponentMask;
             }
         }
 
@@ -119,6 +130,21 @@ namespace Benchmark
                 ref var componentMask = ref _componentBitMasks[i];
 
                 if (componentMask.Has(_wantedBitMask))
+                    continue;
+
+                _results[resultId++] = i;
+            }
+        }
+
+        public void BenchmarkIntFlags()
+        {
+            int resultId = 0;
+
+            for (int i = 0; i < NumberOfOperations; ++i)
+            {
+                ref var componentMask = ref _intComponentMasks[i];
+
+                if ((componentMask & _wantedIntMask) == _wantedIntMask)
                     continue;
 
                 _results[resultId++] = i;

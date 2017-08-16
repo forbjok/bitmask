@@ -13,6 +13,7 @@ namespace Benchmark
         {
             EnumFlags = 0,
             BitMask = 1,
+            IntFlags = 2,
         }
 
         static void Main(string[] args)
@@ -24,6 +25,7 @@ namespace Benchmark
             var times = new Dictionary<Benchmark, TimeSpan[]>();
             times[Benchmark.EnumFlags] = new TimeSpan[iterations];
             times[Benchmark.BitMask] = new TimeSpan[iterations];
+            times[Benchmark.IntFlags] = new TimeSpan[iterations];
 
             for (int i = 0; i < iterations; ++i)
             {
@@ -43,6 +45,15 @@ namespace Benchmark
                     stopwatch.Stop();
 
                     times[Benchmark.BitMask][i] = stopwatch.Elapsed;
+                }
+
+                /* IntFlags benchmark */
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    benchmarkImpl.BenchmarkIntFlags();
+                    stopwatch.Stop();
+
+                    times[Benchmark.IntFlags][i] = stopwatch.Elapsed;
                 }
 
                 Console.WriteLine($"Iteration {i} done.");
