@@ -118,12 +118,16 @@ namespace BitMasks
         {
             fixed (int* ints = _ints)
             {
+                int* myInts = ints;
+                int* maskInts = mask._ints;
+
                 for (int i = 0; i < MaskInts; ++i)
                 {
-                    ref var maskInts = ref mask._ints[i];
-
-                    if ((ints[i] & maskInts) != maskInts)
+                    if ((*myInts & *maskInts) != *maskInts)
                         return false;
+
+                    ++myInts;
+                    ++maskInts;
                 }
             }
 
