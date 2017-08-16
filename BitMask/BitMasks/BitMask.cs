@@ -7,53 +7,85 @@ using System.Threading.Tasks;
 
 namespace BitMasks
 {
-    public unsafe struct BitMask : IEquatable<BitMask>
+    public struct BitMask : IEquatable<BitMask>
     {
+        [Flags]
+        private enum BitEnum
+        {
+            None = 0,
+            B1 = 1 << 0,
+            B2 = 1 << 1,
+            B3 = 1 << 2,
+            B4 = 1 << 3,
+            B5 = 1 << 4,
+            B6 = 1 << 5,
+            B7 = 1 << 6,
+            B8 = 1 << 7,
+            B9 = 1 << 8,
+            B10 = 1 << 9,
+            B11 = 1 << 10,
+            B12 = 1 << 11,
+            B13 = 1 << 12,
+            B14 = 1 << 13,
+            B15 = 1 << 14,
+            B16 = 1 << 15,
+            B17 = 1 << 16,
+            B18 = 1 << 17,
+            B19 = 1 << 18,
+            B20 = 1 << 19,
+            B21 = 1 << 20,
+            B22 = 1 << 21,
+            B23 = 1 << 22,
+            B24 = 1 << 23,
+            B25 = 1 << 24,
+            B26 = 1 << 25,
+            B27 = 1 << 26,
+            B28 = 1 << 27,
+            B29 = 1 << 28,
+            B30 = 1 << 29,
+            B31 = 1 << 30,
+            B32 = 1 << 31,
+        }
+
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskInts = 1;
-        private const int BitsPerInt = 8 * sizeof(int);
+        private const int MaskEnums = 1;
+        private const int BitsPerEnum = 8 * sizeof(BitEnum);
 
-        private fixed int _ints[MaskInts];
+        private BitEnum[] _enums;
 
         public BitMask(int[] bits)
         {
-            fixed (int* ints = _ints)
+            _enums = new BitEnum[MaskEnums];
+
+            for (int i = 0; i < bits.Length; ++i)
             {
-                for (int i = 0; i < bits.Length; ++i)
-                {
-                    ref var bit = ref bits[i];
+                ref var bit = ref bits[i];
 
-                    int intIndex = bit / BitsPerInt;
-                    int bitIndex = bit % BitsPerInt;
-                    int mask = 1 << bitIndex;
+                int byteIndex = bit / BitsPerEnum;
+                int bitIndex = bit % BitsPerEnum;
+                var mask = (BitEnum) (1 << bitIndex);
 
-                    ints[intIndex] |= mask;
-                }
+                _enums[byteIndex] |= mask;
             }
         }
 
-        private static BitMask CreateWithInts(int[] ints)
+        private BitMask(BitEnum[] enums)
         {
-            var bitMask = new BitMask();
+            _enums = new BitEnum[MaskEnums];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                bitMask._ints[i] = ints[i];
+                _enums[i] = enums[i];
             }
-
-            return bitMask;
         }
 
         public bool Equals(BitMask other)
         {
-            fixed (int* ints = _ints)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                for (int i = 0; i < MaskInts; ++i)
-                {
-                    if (ints[i] != other._ints[i])
-                        return false;
-                }
+                if (_enums[i] != other._enums[i])
+                    return false;
             }
 
             return true;
@@ -79,52 +111,49 @@ namespace BitMasks
 
         public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newInts = new int[MaskInts];
+            var newBytes = new BitEnum[MaskEnums];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                newInts[i] = mask1._ints[i] & mask2._ints[i];
+                newBytes[i] = mask1._enums[i] & mask2._enums[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(enums: newBytes);
         }
 
         public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newInts = new int[MaskInts];
+            var newBytes = new BitEnum[MaskEnums];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                newInts[i] = mask1._ints[i] | mask2._ints[i];
+                newBytes[i] = mask1._enums[i] | mask2._enums[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(enums: newBytes);
         }
 
         public static BitMask operator ~(BitMask mask)
         {
-            var newInts = new int[MaskInts];
+            var newBytes = new BitEnum[MaskEnums];
 
-            for (int i = 0; i < MaskInts; ++i)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                newInts[i] = ~mask._ints[i];
+                newBytes[i] = ~mask._enums[i];
             }
 
-            return CreateWithInts(newInts);
+            return new BitMask(enums: newBytes);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(BitMask mask)
         {
-            fixed (int* ints = _ints)
+            for (int i = 0; i < MaskEnums; ++i)
             {
-                for (int i = 0; i < MaskInts; ++i)
-                {
-                    ref var maskInts = ref mask._ints[i];
+                ref var maskBytes = ref mask._enums[i];
 
-                    if ((ints[i] & maskInts) != maskInts)
-                        return false;
-                }
+                if ((_enums[i] & maskBytes) != maskBytes)
+                    return false;
             }
 
             return true;
