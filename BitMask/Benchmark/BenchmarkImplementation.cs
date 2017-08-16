@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Benchmark
 {
     public class BenchmarkImplementation
     {
-        public enum ComponentType
+        public enum ComponentType : long
         {
             None = 0,
             Component1 = 1 << 0,
@@ -44,12 +45,44 @@ namespace Benchmark
             Component30 = 1 << 29,
             Component31 = 1 << 30,
             Component32 = 1 << 31,
+            Component33 = 1 << 32,
+            Component34 = 1 << 33,
+            Component35 = 1 << 34,
+            Component36 = 1 << 35,
+            Component37 = 1 << 36,
+            Component38 = 1 << 37,
+            Component39 = 1 << 38,
+            Component40 = 1 << 39,
+            Component41 = 1 << 40,
+            Component42 = 1 << 41,
+            Component43 = 1 << 42,
+            Component44 = 1 << 43,
+            Component45 = 1 << 44,
+            Component46 = 1 << 45,
+            Component47 = 1 << 46,
+            Component48 = 1 << 47,
+            Component49 = 1 << 48,
+            Component50 = 1 << 49,
+            Component51 = 1 << 50,
+            Component52 = 1 << 51,
+            Component53 = 1 << 52,
+            Component54 = 1 << 53,
+            Component55 = 1 << 54,
+            Component56 = 1 << 55,
+            Component57 = 1 << 56,
+            Component58 = 1 << 57,
+            Component59 = 1 << 58,
+            Component60 = 1 << 59,
+            Component61 = 1 << 60,
+            Component62 = 1 << 61,
+            Component63 = 1 << 62,
+            Component64 = 1 << 63,
         }
 
         private const int NumberOfOperations = 100000;
         private const int NumberOfBits = 8;
 
-        private static readonly int[] WantedBits = new[] {1};
+        private static readonly int[] WantedBits = new[] {58};
 
         private ComponentType[] _enumComponentMasks;
         private ComponentType _wantedEnumMask;
@@ -59,8 +92,8 @@ namespace Benchmark
         private BitMask[] _componentBitMasks;
         private BitMask _wantedBitMask;
 
-        private int[] _intComponentMasks;
-        private int _wantedIntMask;
+        private long[] _intComponentMasks;
+        private long _wantedIntMask;
 
 
         public BenchmarkImplementation()
@@ -74,7 +107,7 @@ namespace Benchmark
             _wantedEnumMask = ComponentType.None;
             _wantedBitMask = new BitMask(bits: WantedBits);
 
-            _intComponentMasks = new int[NumberOfOperations];
+            _intComponentMasks = new long[NumberOfOperations];
             _wantedIntMask = 0;
 
             var random = new Random();

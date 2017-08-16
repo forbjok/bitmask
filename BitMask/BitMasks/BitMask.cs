@@ -11,7 +11,7 @@ namespace BitMasks
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskInts = 1;
+        private const int MaskInts = 2;
         private const int BitsPerInt = 8 * sizeof(int);
 
         private fixed int _ints[MaskInts];
