@@ -10,39 +10,42 @@ namespace BitMasks
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskBytes = 4;
-        private const int BitsPerByte = 8;
+        private const int MaskInts = 1;
+        private const int BitsPerInt = 8 * sizeof(int);
 
-        private readonly byte[] _bytes;
+        private int[] _ints;
 
         public BitMask(int[] bits)
         {
-            _bytes = new byte[MaskBytes];
+            _ints = new int[MaskInts];
 
             for (int i = 0; i < bits.Length; ++i)
             {
                 ref var bit = ref bits[i];
 
-                int byteIndex = bit / BitsPerByte;
-                int bitIndex = bit % BitsPerByte;
-                byte mask = (byte) (1 << bitIndex);
+                int intIndex = bit / BitsPerInt;
+                int bitIndex = bit % BitsPerInt;
+                int mask = 1 << bitIndex;
 
-                ref var targetByte = ref _bytes[byteIndex];
+                ref var targetInt = ref _ints[intIndex];
 
-                targetByte |= mask;
+                targetInt |= mask;
             }
         }
 
-        private BitMask(byte[] bytes)
+        private static BitMask CreateWithInts(int[] ints)
         {
-            _bytes = bytes;
+            var bitMask = new BitMask();
+            bitMask._ints = ints;
+
+            return bitMask;
         }
 
         public bool Equals(BitMask other)
         {
-            for (int i = 0; i < MaskBytes; ++i)
+            for (int i = 0; i < MaskInts; ++i)
             {
-                if (_bytes[i] != other._bytes[i])
+                if (_ints[i] != other._ints[i])
                     return false;
             }
 
@@ -69,45 +72,45 @@ namespace BitMasks
 
         public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newBytes = new byte[MaskBytes];
+            var newInts = new int[MaskInts];
 
-            for (int i = 0; i < MaskBytes; ++i)
+            for (int i = 0; i < MaskInts; ++i)
             {
-                newBytes[i] = (byte) (mask1._bytes[i] & mask2._bytes[i]);
+                newInts[i] = mask1._ints[i] & mask2._ints[i];
             }
 
-            return new BitMask(bytes: newBytes);
+            return CreateWithInts(newInts);
         }
 
         public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newBytes = new byte[MaskBytes];
+            var newInts = new int[MaskInts];
 
-            for (int i = 0; i < MaskBytes; ++i)
+            for (int i = 0; i < MaskInts; ++i)
             {
-                newBytes[i] = (byte) (mask1._bytes[i] | mask2._bytes[i]);
+                newInts[i] = mask1._ints[i] | mask2._ints[i];
             }
 
-            return new BitMask(bytes: newBytes);
+            return CreateWithInts(newInts);
         }
 
         public static BitMask operator ~(BitMask mask)
         {
-            var newBytes = new byte[MaskBytes];
+            var newInts = new int[MaskInts];
 
-            for (int i = 0; i < MaskBytes; ++i)
+            for (int i = 0; i < MaskInts; ++i)
             {
-                newBytes[i] = (byte) ~mask._bytes[i];
+                newInts[i] = ~mask._ints[i];
             }
 
-            return new BitMask(bytes: newBytes);
+            return CreateWithInts(newInts);
         }
 
         public bool Has(BitMask mask)
         {
-            for (int i = 0; i < MaskBytes; ++i)
+            for (int i = 0; i < MaskInts; ++i)
             {
-                if ((_bytes[i] & mask._bytes[i]) != mask._bytes[i])
+                if ((_ints[i] & mask._ints[i]) != mask._ints[i])
                     return false;
             }
 
