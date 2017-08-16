@@ -1,52 +1,59 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BitMasks
 {
-    public struct BitMask : IEquatable<BitMask>
+    public unsafe struct BitMask : IEquatable<BitMask>
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
         private const int MaskInts = 1;
         private const int BitsPerInt = 8 * sizeof(int);
 
-        private int[] _ints;
+        private fixed int _ints[MaskInts];
 
         public BitMask(int[] bits)
         {
-            _ints = new int[MaskInts];
-
-            for (int i = 0; i < bits.Length; ++i)
+            fixed (int* ints = _ints)
             {
-                ref var bit = ref bits[i];
+                for (int i = 0; i < bits.Length; ++i)
+                {
+                    ref var bit = ref bits[i];
 
-                int intIndex = bit / BitsPerInt;
-                int bitIndex = bit % BitsPerInt;
-                int mask = 1 << bitIndex;
+                    int intIndex = bit / BitsPerInt;
+                    int bitIndex = bit % BitsPerInt;
+                    int mask = 1 << bitIndex;
 
-                ref var targetInt = ref _ints[intIndex];
-
-                targetInt |= mask;
+                    ints[intIndex] |= mask;
+                }
             }
         }
 
         private static BitMask CreateWithInts(int[] ints)
         {
             var bitMask = new BitMask();
-            bitMask._ints = ints;
+
+            for (int i = 0; i < MaskInts; ++i)
+            {
+                bitMask._ints[i] = ints[i];
+            }
 
             return bitMask;
         }
 
         public bool Equals(BitMask other)
         {
-            for (int i = 0; i < MaskInts; ++i)
+            fixed (int* ints = _ints)
             {
-                if (_ints[i] != other._ints[i])
-                    return false;
+                for (int i = 0; i < MaskInts; ++i)
+                {
+                    if (ints[i] != other._ints[i])
+                        return false;
+                }
             }
 
             return true;
@@ -106,12 +113,18 @@ namespace BitMasks
             return CreateWithInts(newInts);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(BitMask mask)
         {
-            for (int i = 0; i < MaskInts; ++i)
+            fixed (int* ints = _ints)
             {
-                if ((_ints[i] & mask._ints[i]) != mask._ints[i])
-                    return false;
+                for (int i = 0; i < MaskInts; ++i)
+                {
+                    ref var maskInts = ref mask._ints[i];
+
+                    if ((ints[i] & maskInts) != maskInts)
+                        return false;
+                }
             }
 
             return true;
