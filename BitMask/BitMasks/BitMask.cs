@@ -33,17 +33,6 @@ namespace BitMasks
             }
         }
 
-        private BitMask(long[] data)
-        {
-            fixed (long* longs = _longs)
-            {
-                for (int i = 0; i < MaskLongs; ++i)
-                {
-                    longs[i] = data[i];
-                }
-            }
-        }
-
         public bool Equals(BitMask other)
         {
             fixed (long* longs = _longs)
@@ -78,38 +67,60 @@ namespace BitMasks
 
         public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newLongs = new long[MaskLongs];
+            var newBitMask = new BitMask();
+
+            long* newLongs = newBitMask._longs;
+            long* mask1Longs = mask1._longs;
+            long* mask2Longs = mask2._longs;
 
             for (int i = 0; i < MaskLongs; ++i)
             {
-                newLongs[i] = mask1._longs[i] & mask2._longs[i];
+                *newLongs = *mask1Longs & *mask2Longs;
+
+                ++newLongs;
+                ++mask1Longs;
+                ++mask2Longs;
             }
 
-            return new BitMask(data: newLongs);
+            return newBitMask;
         }
 
         public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newLongs = new long[MaskLongs];
+            var newBitMask = new BitMask();
+
+            long* newLongs = newBitMask._longs;
+            long* mask1Longs = mask1._longs;
+            long* mask2Longs = mask2._longs;
 
             for (int i = 0; i < MaskLongs; ++i)
             {
-                newLongs[i] = mask1._longs[i] | mask2._longs[i];
+                *newLongs = *mask1Longs | *mask2Longs;
+
+                ++newLongs;
+                ++mask1Longs;
+                ++mask2Longs;
             }
 
-            return new BitMask(data: newLongs);
+            return newBitMask;
         }
 
         public static BitMask operator ~(BitMask mask)
         {
-            var newLongs = new long[MaskLongs];
+            var newBitMask = new BitMask();
+
+            long* newLongs = newBitMask._longs;
+            long* maskLongs = mask._longs;
 
             for (int i = 0; i < MaskLongs; ++i)
             {
-                newLongs[i] = ~mask._longs[i];
+                *newLongs = ~*maskLongs;
+
+                ++newLongs;
+                ++maskLongs;
             }
 
-            return new BitMask(data: newLongs);
+            return newBitMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
