@@ -73,5 +73,17 @@ namespace BitMasks.Tests
 
             Assert.Equal(expectedResult, ~bitMask);
         }
+
+        [Fact]
+        public void CanIndex()
+        {
+            var allBits = Enumerable.Range(0, 64).ToArray();
+            var setBits = new[] {1, 2, 3, 6, 8, 12, 19, 34, 42, 61};
+
+            var bitMask = new BitMask(bits: setBits);
+
+            Assert.True(setBits.Select(b => bitMask[b]).All(v => v == true));
+            Assert.True(allBits.Except(setBits).Select(b => bitMask[b]).All(v => v == false));
+        }
     }
 }

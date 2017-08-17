@@ -41,6 +41,23 @@ namespace BitMasks
             }
         }
 
+        public bool this[int index]
+        {
+            get
+            {
+                if (index < 0 || index > MaxBitIndex)
+                    throw new Exception($"Invalid bit index: {index}");
+
+                var dataIndex = index / BitsPerData;
+                var bitIndex = index % BitsPerData;
+
+                fixed (DataType* data = _data)
+                {
+                    return (data[dataIndex] & ((DataType) 1 << bitIndex)) != 0;
+                }
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(BitMask other)
         {
