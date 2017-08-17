@@ -41,6 +41,7 @@ namespace BitMasks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(BitMask other)
         {
             fixed (DataType* data = _data)
@@ -69,16 +70,19 @@ namespace BitMasks
             return base.Equals(obj);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(BitMask mask1, BitMask mask2)
         {
             return mask1.Equals(mask2);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(BitMask mask1, BitMask mask2)
         {
             return !mask1.Equals(mask2);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
             var newBitMask = new BitMask();
@@ -99,6 +103,7 @@ namespace BitMasks
             return newBitMask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
             var newBitMask = new BitMask();
@@ -119,6 +124,7 @@ namespace BitMasks
             return newBitMask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BitMask operator ~(BitMask mask)
         {
             var newBitMask = new BitMask();
