@@ -114,8 +114,10 @@ namespace Benchmark
 
             for (int i = 0; i < WantedBits.Length; ++i)
             {
-                _wantedEnumMask |= (ComponentType) WantedBits[i];
-                _wantedIntMask |= WantedBits[i];
+                var bit = WantedBits[i];
+
+                _wantedEnumMask |= (ComponentType) (1 << bit);
+                _wantedIntMask |= (1 << bit);
             }
 
             for (int i = 0; i < NumberOfOperations; ++i)
