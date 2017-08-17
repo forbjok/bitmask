@@ -84,7 +84,7 @@ namespace Benchmark
         private const int NumberOfOperations = 100000;
         private const int NumberOfBits = 8;
 
-        private static readonly int[] WantedBits = {58};
+        private static readonly int[] WantedBits = {1, 6, 9, 10, 14, 17, 29, 31, 42, 57, 58, 61, 62};
 
         private ComponentType[] _enumComponentMasks;
         private ComponentType _wantedEnumMask;
