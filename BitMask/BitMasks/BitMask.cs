@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -142,6 +143,23 @@ namespace BitMasks
             }
 
             return true;
+        }
+
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+
+            fixed (long* longs = _longs)
+            {
+                for (int i = 0; i < MaskLongs; ++i)
+                {
+                    var binaryString = Convert.ToString(longs[i], 2);
+
+                    builder.Append(binaryString.PadLeft(BitsPerLong * MaskLongs, '0'));
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }
