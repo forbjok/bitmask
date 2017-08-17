@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BitMasks
 {
-    using DataType = System.Int64;
+    using DataType = UInt64;
 
     public unsafe struct BitMask : IEquatable<BitMask>
     {
@@ -189,7 +189,7 @@ namespace BitMasks
             {
                 for (int i = 0; i < MaskDataSize; ++i)
                 {
-                    var binaryString = Convert.ToString(data[i], 2);
+                    var binaryString = Convert.ToString((long) data[i], 2);
 
                     builder.Append(binaryString.PadLeft(BitsPerData * MaskDataSize, '0'));
                 }

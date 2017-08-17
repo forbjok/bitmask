@@ -8,7 +8,7 @@ using BitMasks;
 
 namespace Benchmark
 {
-    using IntType = Int64;
+    using IntType = UInt64;
 
     public class BenchmarkImplementation
     {
