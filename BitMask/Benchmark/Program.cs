@@ -14,6 +14,7 @@ namespace Benchmark
             EnumFlags = 0,
             BitMask = 1,
             IntFlags = 2,
+            BitArray = 3,
         }
 
         static void Main(string[] args)
@@ -26,6 +27,7 @@ namespace Benchmark
             times[Benchmark.EnumFlags] = new TimeSpan[iterations];
             times[Benchmark.BitMask] = new TimeSpan[iterations];
             times[Benchmark.IntFlags] = new TimeSpan[iterations];
+            times[Benchmark.BitArray] = new TimeSpan[iterations];
 
             for (int i = 0; i < iterations; ++i)
             {
@@ -54,6 +56,15 @@ namespace Benchmark
                     stopwatch.Stop();
 
                     times[Benchmark.IntFlags][i] = stopwatch.Elapsed;
+                }
+
+                /* BitArray benchmark */
+                {
+                    var stopwatch = Stopwatch.StartNew();
+                    benchmarkImpl.BenchmarkBitArray();
+                    stopwatch.Stop();
+
+                    times[Benchmark.BitArray][i] = stopwatch.Elapsed;
                 }
 
                 Console.WriteLine($"Iteration {i} done.");

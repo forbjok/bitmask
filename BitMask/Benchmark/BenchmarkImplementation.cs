@@ -12,6 +12,8 @@ namespace Benchmark
 
     public class BenchmarkImplementation
     {
+        private const int BitSize = sizeof(IntType) * 8;
+
         public enum ComponentType : IntType
         {
             None = 0,
@@ -97,6 +99,8 @@ namespace Benchmark
         private IntType[] _intComponentMasks;
         private IntType _wantedIntMask;
 
+        private BitArray[] _bitArrayComponentMasks;
+        private BitArray _wantedBitArrayMask;
 
         public BenchmarkImplementation()
         {
@@ -112,6 +116,9 @@ namespace Benchmark
             _intComponentMasks = new IntType[NumberOfOperations];
             _wantedIntMask = 0;
 
+            _bitArrayComponentMasks = new BitArray[NumberOfOperations];
+            _wantedBitArrayMask = new BitArray(BitSize);
+
             var random = new Random();
 
             for (int i = 0; i < WantedBits.Length; ++i)
@@ -120,6 +127,7 @@ namespace Benchmark
 
                 _wantedEnumMask |= (ComponentType) ((IntType) 1 << bit);
                 _wantedIntMask |= (IntType) 1 << bit;
+                _wantedBitArrayMask.Set(bit, true);
             }
 
             for (int i = 0; i < NumberOfOperations; ++i)
@@ -127,6 +135,7 @@ namespace Benchmark
                 ComponentType enumComponentMask = ComponentType.None;
                 BitMask componentBitMask = BitMask.None;
                 IntType intComponentMask = 0;
+                var bitArrayComponentMask = new BitArray(BitSize);
 
                 for (int b = 0; b < NumberOfBits; ++b)
                 {
@@ -135,11 +144,13 @@ namespace Benchmark
                     enumComponentMask |= (ComponentType) ((IntType) 1 << bit);
                     componentBitMask |= new BitMask(bits: new[] {bit});
                     intComponentMask |= (IntType) 1 << bit;
+                    bitArrayComponentMask.Set(bit, true);
                 }
 
                 _enumComponentMasks[i] = enumComponentMask;
                 _componentBitMasks[i] = componentBitMask;
                 _intComponentMasks[i] = intComponentMask;
+                _bitArrayComponentMasks[i] = bitArrayComponentMask;
             }
         }
 
@@ -187,5 +198,26 @@ namespace Benchmark
                 _results[resultId++] = i;
             }
         }
+
+        public void BenchmarkBitArray()
+        {
+            int resultId = 0;
+
+            for (int i = 0; i < NumberOfOperations; ++i)
+            {
+                ref var componentMask = ref _bitArrayComponentMasks[i];
+
+                /* Because BitArray modifies its internal value in-place when using And(),
+                 * trashing the original component mask, we need to make a copy of it
+                 * before performing the check. */
+                var componentMaskCopy = new BitArray(componentMask);
+
+                if (componentMaskCopy.And(_wantedBitArrayMask) == _wantedBitArrayMask)
+                    continue;
+
+                _results[resultId++] = i;
+            }
+        }
+
     }
 }
