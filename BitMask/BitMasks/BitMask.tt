@@ -1,4 +1,13 @@
-using System;
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #><#
+    const int FieldCount = 2;
+    const int BitsPerField = 8 * sizeof(UInt64);
+    const int BitSize = FieldCount * BitsPerField;
+#>using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,23 +19,35 @@ namespace BitMasks
 {
     using DataType = UInt64;
 
-    public struct BitMask128 : IEquatable<BitMask128>
+    public struct BitMask<#= BitSize #> : IEquatable<BitMask<#= BitSize #>>
     {
-        public static readonly BitMask128 None = new BitMask128(bits: new int[0]);
+        public static readonly BitMask<#= BitSize #> None = new BitMask<#= BitSize #>(bits: new int[0]);
 
-        private const int MaskDataSize = 2;
+        private const int MaskDataSize = <#= FieldCount #>;
         private const int BitsPerData = 8 * sizeof(DataType);
         private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
 
         public const int BitSize = MaskDataSize * BitsPerData;
 
-        private DataType _field0;
-        private DataType _field1;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+        private DataType _field<#= i #>;
+<#
+    }
+#>
 
-        public BitMask128(int[] bits)
+        public BitMask<#= BitSize #>(int[] bits)
         {
-            _field0 = 0;
-            _field1 = 0;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            _field<#= i #> = 0;
+<#
+    }
+#>
 
             for (int i = 0; i < bits.Length; ++i)
             {
@@ -42,12 +63,16 @@ namespace BitMasks
 
                 switch (dataIndex)
                 {
-                    case 0:
-                        _field0 |= mask;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+                    case <#= i #>:
+                        _field<#= i #> |= mask;
                         break;
-                    case 1:
-                        _field1 |= mask;
-                        break;
+<#
+    }
+#>
                     default:
                         throw new Exception($"Nonexistent field: {dataIndex}");
                 }
@@ -66,10 +91,15 @@ namespace BitMasks
 
                 switch (dataIndex)
                 {
-                    case 0:
-                        return (_field0 & ((DataType) 1 << bitIndex)) != 0;
-                    case 1:
-                        return (_field1 & ((DataType) 1 << bitIndex)) != 0;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+                    case <#= i #>:
+                        return (_field<#= i #> & ((DataType) 1 << bitIndex)) != 0;
+<#
+    }
+#>
                     default:
                         return false;
                 }
@@ -77,79 +107,105 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(BitMask128 other)
+        public bool Equals(BitMask<#= BitSize #> other)
         {
-            if (_field0 != other._field0)
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            if (_field<#= i #> != other._field<#= i #>)
                 return false;
 
-            if (_field1 != other._field1)
-                return false;
-
+<#
+    }
+#>
             return true;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is BitMask128)
-                return Equals((BitMask128) obj);
+            if (obj is BitMask<#= BitSize #>)
+                return Equals((BitMask<#= BitSize #>) obj);
 
             return base.Equals(obj);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(BitMask128 mask1, BitMask128 mask2)
+        public static bool operator ==(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
         {
             return mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(BitMask128 mask1, BitMask128 mask2)
+        public static bool operator !=(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
         {
             return !mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator &(BitMask128 mask1, BitMask128 mask2)
+        public static BitMask<#= BitSize #> operator &(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask<#= BitSize #>();
 
-            newBitMask._field0 = mask1._field0 & mask2._field0;
-            newBitMask._field1 = mask1._field1 & mask2._field1;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            newBitMask._field<#= i #> = mask1._field<#= i #> & mask2._field<#= i #>;
+<#
+    }
+#>
 
             return newBitMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator |(BitMask128 mask1, BitMask128 mask2)
+        public static BitMask<#= BitSize #> operator |(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask<#= BitSize #>();
 
-            newBitMask._field0 = mask1._field0 | mask2._field0;
-            newBitMask._field1 = mask1._field1 | mask2._field1;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            newBitMask._field<#= i #> = mask1._field<#= i #> | mask2._field<#= i #>;
+<#
+    }
+#>
 
             return newBitMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator ~(BitMask128 mask)
+        public static BitMask<#= BitSize #> operator ~(BitMask<#= BitSize #> mask)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask<#= BitSize #>();
 
-            newBitMask._field0 = ~mask._field0;
-            newBitMask._field1 = ~mask._field1;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            newBitMask._field<#= i #> = ~mask._field<#= i #>;
+<#
+    }
+#>
 
             return newBitMask;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Has(BitMask128 mask)
+        public bool Has(BitMask<#= BitSize #> mask)
         {
-            if ((_field0 & mask._field0) != mask._field0)
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            if ((_field<#= i #> & mask._field<#= i #>) != mask._field<#= i #>)
                 return false;
 
-            if ((_field1 & mask._field1) != mask._field1)
-                return false;
-
+<#
+    }
+#>
             return true;
         }
 
@@ -159,8 +215,14 @@ namespace BitMasks
 
             var fields = new DataType[MaskDataSize];
 
-            fields[0] = _field0;
-            fields[1] = _field1;
+<#
+    for (int i = 0; i < FieldCount; ++i)
+    {
+#>
+            fields[<#= i #>] = _field<#= i #>;
+<#
+    }
+#>
 
             for (int i = 0; i < MaskDataSize; ++i)
             {
