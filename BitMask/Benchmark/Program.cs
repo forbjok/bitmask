@@ -40,20 +40,28 @@ namespace Benchmark
 
                 /* BitMask benchmark */
                 {
+                    benchmarkImpl.SwapResults();
+
                     var stopwatch = Stopwatch.StartNew();
                     benchmarkImpl.BenchmarkBitMask();
                     stopwatch.Stop();
 
                     times[Benchmark.BitMask][i] = stopwatch.Elapsed;
+
+                    benchmarkImpl.CheckResults();
                 }
 
                 /* IntFlags benchmark */
                 {
+                    benchmarkImpl.SwapResults();
+
                     var stopwatch = Stopwatch.StartNew();
                     benchmarkImpl.BenchmarkIntFlags();
                     stopwatch.Stop();
 
                     times[Benchmark.IntFlags][i] = stopwatch.Elapsed;
+
+                    benchmarkImpl.CheckResults();
                 }
 
                 Console.WriteLine($"Iteration {i} done.");

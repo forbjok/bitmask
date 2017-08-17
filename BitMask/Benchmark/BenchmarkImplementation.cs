@@ -90,6 +90,7 @@ namespace Benchmark
         private ComponentType _wantedEnumMask;
 
         private int[] _results;
+        private int[] _previousResults;
 
         private BitMask[] _componentBitMasks;
         private BitMask _wantedBitMask;
@@ -97,10 +98,26 @@ namespace Benchmark
         private IntType[] _intComponentMasks;
         private IntType _wantedIntMask;
 
+        public void SwapResults()
+        {
+            var results = _previousResults;
+            _previousResults = _results;
+            _results = results;
+        }
+
+        public void CheckResults()
+        {
+            for (int i = 0; i < NumberOfOperations; ++i)
+            {
+                if (_results[i] != _previousResults[i])
+                    throw new Exception($"Result #{i} differs from previous!");
+            }
+        }
 
         public BenchmarkImplementation()
         {
             _results = new int[NumberOfOperations];
+            _previousResults = new int[NumberOfOperations];
 
             /* Set up EnumFlags benchmark */
             _enumComponentMasks = new ComponentType[NumberOfOperations];
