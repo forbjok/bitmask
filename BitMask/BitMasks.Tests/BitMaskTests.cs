@@ -69,7 +69,7 @@ namespace BitMasks.Tests
         public void CanNot()
         {
             var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31});
-            var expectedResult = new BitMask(new[] {0, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29});
+            var expectedResult = new BitMask(new[] {0, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29}.Union(Enumerable.Range(32, 32)).ToArray());
 
             Assert.Equal(expectedResult, ~bitMask);
         }
