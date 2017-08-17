@@ -8,39 +8,42 @@ using System.Threading.Tasks;
 
 namespace BitMasks
 {
+    using DataType = System.Int64;
+
     public unsafe struct BitMask : IEquatable<BitMask>
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskLongs = 1;
-        private const int BitsPerLong = 8 * sizeof(long);
+        private const int MaskDataSize = 1;
+        private const int BitsPerData = 8 * sizeof(DataType);
 
-        private fixed long _longs[MaskLongs];
+        private fixed DataType _data[MaskDataSize];
 
         public BitMask(int[] bits)
         {
-            fixed (long* longs = _longs)
+            fixed (DataType* data = _data)
             {
                 for (int i = 0; i < bits.Length; ++i)
                 {
                     ref var bit = ref bits[i];
 
-                    int intIndex = bit / BitsPerLong;
-                    int bitIndex = bit % BitsPerLong;
-                    long mask = (long) 1 << bitIndex;
+                    var dataIndex = bit / BitsPerData;
+                    var bitIndex = bit % BitsPerData;
 
-                    longs[intIndex] |= mask;
+                    var mask = (DataType) 1 << bitIndex;
+
+                    data[dataIndex] |= mask;
                 }
             }
         }
 
         public bool Equals(BitMask other)
         {
-            fixed (long* longs = _longs)
+            fixed (DataType* data = _data)
             {
-                for (int i = 0; i < MaskLongs; ++i)
+                for (int i = 0; i < MaskDataSize; ++i)
                 {
-                    if (longs[i] != other._longs[i])
+                    if (data[i] != other._data[i])
                         return false;
                 }
             }
@@ -70,17 +73,17 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            long* newLongs = newBitMask._longs;
-            long* mask1Longs = mask1._longs;
-            long* mask2Longs = mask2._longs;
+            DataType* newData = newBitMask._data;
+            DataType* mask1Data = mask1._data;
+            DataType* mask2Data = mask2._data;
 
-            for (int i = 0; i < MaskLongs; ++i)
+            for (int i = 0; i < MaskDataSize; ++i)
             {
-                *newLongs = *mask1Longs & *mask2Longs;
+                *newData = *mask1Data & *mask2Data;
 
-                ++newLongs;
-                ++mask1Longs;
-                ++mask2Longs;
+                ++newData;
+                ++mask1Data;
+                ++mask2Data;
             }
 
             return newBitMask;
@@ -90,17 +93,17 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            long* newLongs = newBitMask._longs;
-            long* mask1Longs = mask1._longs;
-            long* mask2Longs = mask2._longs;
+            DataType* newData = newBitMask._data;
+            DataType* mask1Data = mask1._data;
+            DataType* mask2Data = mask2._data;
 
-            for (int i = 0; i < MaskLongs; ++i)
+            for (int i = 0; i < MaskDataSize; ++i)
             {
-                *newLongs = *mask1Longs | *mask2Longs;
+                *newData = *mask1Data | *mask2Data;
 
-                ++newLongs;
-                ++mask1Longs;
-                ++mask2Longs;
+                ++newData;
+                ++mask1Data;
+                ++mask2Data;
             }
 
             return newBitMask;
@@ -110,15 +113,15 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            long* newLongs = newBitMask._longs;
-            long* maskLongs = mask._longs;
+            DataType* newData = newBitMask._data;
+            DataType* maskData = mask._data;
 
-            for (int i = 0; i < MaskLongs; ++i)
+            for (int i = 0; i < MaskDataSize; ++i)
             {
-                *newLongs = ~*maskLongs;
+                *newData = ~*maskData;
 
-                ++newLongs;
-                ++maskLongs;
+                ++newData;
+                ++maskData;
             }
 
             return newBitMask;
@@ -127,18 +130,18 @@ namespace BitMasks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(BitMask mask)
         {
-            fixed (long* longs = _longs)
+            fixed (DataType* data = _data)
             {
-                long* myInts = longs;
-                long* maskInts = mask._longs;
+                DataType* myData = data;
+                DataType* maskData = mask._data;
 
-                for (int i = 0; i < MaskLongs; ++i)
+                for (int i = 0; i < MaskDataSize; ++i)
                 {
-                    if ((*myInts & *maskInts) != *maskInts)
+                    if ((*myData & *maskData) != *maskData)
                         return false;
 
-                    ++myInts;
-                    ++maskInts;
+                    ++myData;
+                    ++maskData;
                 }
             }
 
@@ -149,13 +152,13 @@ namespace BitMasks
         {
             var builder = new StringBuilder();
 
-            fixed (long* longs = _longs)
+            fixed (DataType* data = _data)
             {
-                for (int i = 0; i < MaskLongs; ++i)
+                for (int i = 0; i < MaskDataSize; ++i)
                 {
-                    var binaryString = Convert.ToString(longs[i], 2);
+                    var binaryString = Convert.ToString(data[i], 2);
 
-                    builder.Append(binaryString.PadLeft(BitsPerLong * MaskLongs, '0'));
+                    builder.Append(binaryString.PadLeft(BitsPerData * MaskDataSize, '0'));
                 }
             }
 
