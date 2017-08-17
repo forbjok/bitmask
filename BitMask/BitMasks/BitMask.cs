@@ -14,17 +14,19 @@ namespace BitMasks
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskDataSize = 1;
+        private const int MaskDataSize = 2;
         private const int BitsPerData = 8 * sizeof(DataType);
         private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
 
         public const int BitSize = MaskDataSize * BitsPerData;
 
         private DataType _field0;
+        private DataType _field1;
 
         public BitMask(int[] bits)
         {
             _field0 = 0;
+            _field1 = 0;
 
             for (int i = 0; i < bits.Length; ++i)
             {
@@ -42,6 +44,9 @@ namespace BitMasks
                 {
                     case 0:
                         _field0 |= mask;
+                        break;
+                    case 1:
+                        _field1 |= mask;
                         break;
                     default:
                         throw new Exception($"Nonexistent field: {dataIndex}");
@@ -63,6 +68,8 @@ namespace BitMasks
                 {
                     case 0:
                         return (_field0 & ((DataType) 1 << bitIndex)) != 0;
+                    case 1:
+                        return (_field1 & ((DataType) 1 << bitIndex)) != 0;
                     default:
                         return false;
                 }
@@ -73,6 +80,9 @@ namespace BitMasks
         public bool Equals(BitMask other)
         {
             if (_field0 != other._field0)
+                return false;
+
+            if (_field1 != other._field1)
                 return false;
 
             return true;
@@ -104,6 +114,7 @@ namespace BitMasks
             var newBitMask = new BitMask();
 
             newBitMask._field0 = mask1._field0 & mask2._field0;
+            newBitMask._field1 = mask1._field1 & mask2._field1;
 
             return newBitMask;
         }
@@ -114,6 +125,7 @@ namespace BitMasks
             var newBitMask = new BitMask();
 
             newBitMask._field0 = mask1._field0 | mask2._field0;
+            newBitMask._field1 = mask1._field1 | mask2._field1;
 
             return newBitMask;
         }
@@ -124,6 +136,7 @@ namespace BitMasks
             var newBitMask = new BitMask();
 
             newBitMask._field0 = ~mask._field0;
+            newBitMask._field1 = ~mask._field1;
 
             return newBitMask;
         }
@@ -132,6 +145,9 @@ namespace BitMasks
         public bool Has(BitMask mask)
         {
             if ((_field0 & mask._field0) != mask._field0)
+                return false;
+
+            if ((_field1 & mask._field1) != mask._field1)
                 return false;
 
             return true;
@@ -144,6 +160,7 @@ namespace BitMasks
             var fields = new DataType[MaskDataSize];
 
             fields[0] = _field0;
+            fields[1] = _field1;
 
             for (int i = 0; i < MaskDataSize; ++i)
             {

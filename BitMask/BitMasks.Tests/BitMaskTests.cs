@@ -12,7 +12,7 @@ namespace BitMasks.Tests
         [Fact]
         public void CanEqualsTrue()
         {
-            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63};
+            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63, 72, 112};
 
             var bitMask = new BitMask(bits);
             var bitMask2 = new BitMask(bits);
@@ -23,8 +23,8 @@ namespace BitMasks.Tests
         [Fact]
         public void CanEqualsFalse()
         {
-            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63});
-            var bitMask2 = new BitMask(new[] {1, 2, 4, 21, 29, 30});
+            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63, 72, 112});
+            var bitMask2 = new BitMask(new[] {1, 2, 4, 21, 29, 30, 72, 118});
 
             Assert.False(bitMask == bitMask2);
         }
@@ -32,8 +32,8 @@ namespace BitMasks.Tests
         [Fact]
         public void CanHasTrue()
         {
-            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63});
-            var bitMask2 = new BitMask(new[] {2, 4, 16, 17, 30, 63});
+            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63, 72, 112});
+            var bitMask2 = new BitMask(new[] {2, 4, 16, 17, 30, 63, 112});
 
             Assert.True(bitMask.Has(bitMask2));
         }
@@ -42,7 +42,7 @@ namespace BitMasks.Tests
         public void CanHasFalse()
         {
             var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31});
-            var bitMask2 = new BitMask(new[] {1, 2, 3, 4, 9, 10, 16, 17, 20, 30, 31});
+            var bitMask2 = new BitMask(new[] {1, 2, 3, 4, 9, 10, 16, 17, 20, 30, 31, 72});
 
             Assert.False(bitMask.Has(bitMask2));
         }
@@ -50,9 +50,9 @@ namespace BitMasks.Tests
         [Fact]
         public void CanAnd()
         {
-            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63});
-            var bitMask2 = new BitMask(new[] {1, 2, 3, 4, 10, 17, 20, 30, 31, 63});
-            var expectedResult = new BitMask(new[] {1, 2, 3, 4, 10, 17, 20, 30, 31, 63});
+            var bitMask = new BitMask(new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63, 72, 112});
+            var bitMask2 = new BitMask(new[] {1, 2, 3, 4, 10, 17, 20, 30, 31, 63, 112});
+            var expectedResult = new BitMask(new[] {1, 2, 3, 4, 10, 17, 20, 30, 31, 63, 112});
 
             Assert.Equal(expectedResult, bitMask & bitMask2);
         }
@@ -60,8 +60,8 @@ namespace BitMasks.Tests
         [Fact]
         public void CanOr()
         {
-            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63};
-            var orBits = new[] {1, 2, 3, 4, 10, 17, 20, 30, 31};
+            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 63, 72, 112};
+            var orBits = new[] {1, 2, 3, 4, 10, 17, 20, 30, 31, 112};
 
             var bitMask = new BitMask(bits);
             var bitMask2 = new BitMask(orBits);
@@ -73,7 +73,7 @@ namespace BitMasks.Tests
         [Fact]
         public void CanNot()
         {
-            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31};
+            var bits = new[] {1, 2, 3, 4, 10, 16, 17, 20, 30, 31, 72, 81, 111};
 
             var bitMask = new BitMask(bits);
             var expectedResult = new BitMask(Enumerable.Range(0, BitMask.BitSize).Except(bits).ToArray());
@@ -85,7 +85,7 @@ namespace BitMasks.Tests
         public void CanIndex()
         {
             var allBits = Enumerable.Range(0, BitMask.BitSize).ToArray();
-            var setBits = new[] {1, 2, 3, 6, 8, 12, 19, 34, 42, 61};
+            var setBits = new[] {1, 2, 3, 6, 8, 12, 19, 34, 42, 61, 73, 85, 114};
 
             var bitMask = new BitMask(bits: setBits);
 
