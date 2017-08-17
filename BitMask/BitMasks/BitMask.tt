@@ -4,9 +4,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #><#
-    const int FieldCount = 2;
-    const int BitsPerField = 8 * sizeof(UInt64);
-    const int BitSize = FieldCount * BitsPerField;
+    const int NumberOfFields = 2;
 #>using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,31 +15,31 @@ using System.Threading.Tasks;
 
 namespace BitMasks
 {
-    using DataType = UInt64;
+    using FieldType = UInt64;
 
-    public struct BitMask<#= BitSize #> : IEquatable<BitMask<#= BitSize #>>
+    public struct BitMask : IEquatable<BitMask>
     {
-        public static readonly BitMask<#= BitSize #> None = new BitMask<#= BitSize #>(bits: new int[0]);
+        public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskDataSize = <#= FieldCount #>;
-        private const int BitsPerData = 8 * sizeof(DataType);
-        private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
+        private const int FieldCount = <#= NumberOfFields #>;
+        private const int BitsPerField = 8 * sizeof(FieldType);
+        private const int MaxBitIndex = (FieldCount * BitsPerField) - 1;
 
-        public const int BitSize = MaskDataSize * BitsPerData;
+        public const int BitSize = FieldCount * BitsPerField;
 
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
-        private DataType _field<#= i #>;
+        private FieldType _field<#= i #>;
 <#
     }
 #>
 
-        public BitMask<#= BitSize #>(int[] bits)
+        public BitMask(int[] bits)
         {
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             _field<#= i #> = 0;
@@ -56,15 +54,15 @@ namespace BitMasks
                 if (bit < 0 || bit > MaxBitIndex)
                     throw new Exception($"Attempted to set bit #{bit}, but the maximum is {MaxBitIndex}");
 
-                var dataIndex = bit / BitsPerData;
-                var bitIndex = bit % BitsPerData;
+                var dataIndex = bit / BitsPerField;
+                var bitIndex = bit % BitsPerField;
 
-                var mask = (DataType) 1 << bitIndex;
+                var mask = (FieldType) 1 << bitIndex;
 
                 switch (dataIndex)
                 {
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
                     case <#= i #>:
@@ -86,17 +84,17 @@ namespace BitMasks
                 if (index < 0 || index > MaxBitIndex)
                     throw new Exception($"Invalid bit index: {index}");
 
-                var dataIndex = index / BitsPerData;
-                var bitIndex = index % BitsPerData;
+                var dataIndex = index / BitsPerField;
+                var bitIndex = index % BitsPerField;
 
                 switch (dataIndex)
                 {
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
                     case <#= i #>:
-                        return (_field<#= i #> & ((DataType) 1 << bitIndex)) != 0;
+                        return (_field<#= i #> & ((FieldType) 1 << bitIndex)) != 0;
 <#
     }
 #>
@@ -107,10 +105,10 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(BitMask<#= BitSize #> other)
+        public bool Equals(BitMask other)
         {
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             if (_field<#= i #> != other._field<#= i #>)
@@ -124,31 +122,31 @@ namespace BitMasks
 
         public override bool Equals(object obj)
         {
-            if (obj is BitMask<#= BitSize #>)
-                return Equals((BitMask<#= BitSize #>) obj);
+            if (obj is BitMask)
+                return Equals((BitMask) obj);
 
             return base.Equals(obj);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
+        public static bool operator ==(BitMask mask1, BitMask mask2)
         {
             return mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
+        public static bool operator !=(BitMask mask1, BitMask mask2)
         {
             return !mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask<#= BitSize #> operator &(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
+        public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newBitMask = new BitMask<#= BitSize #>();
+            var newBitMask = new BitMask();
 
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             newBitMask._field<#= i #> = mask1._field<#= i #> & mask2._field<#= i #>;
@@ -160,12 +158,12 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask<#= BitSize #> operator |(BitMask<#= BitSize #> mask1, BitMask<#= BitSize #> mask2)
+        public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newBitMask = new BitMask<#= BitSize #>();
+            var newBitMask = new BitMask();
 
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             newBitMask._field<#= i #> = mask1._field<#= i #> | mask2._field<#= i #>;
@@ -177,12 +175,12 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask<#= BitSize #> operator ~(BitMask<#= BitSize #> mask)
+        public static BitMask operator ~(BitMask mask)
         {
-            var newBitMask = new BitMask<#= BitSize #>();
+            var newBitMask = new BitMask();
 
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             newBitMask._field<#= i #> = ~mask._field<#= i #>;
@@ -194,10 +192,10 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Has(BitMask<#= BitSize #> mask)
+        public bool Has(BitMask mask)
         {
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             if ((_field<#= i #> & mask._field<#= i #>) != mask._field<#= i #>)
@@ -213,10 +211,10 @@ namespace BitMasks
         {
             var builder = new StringBuilder();
 
-            var fields = new DataType[MaskDataSize];
+            var fields = new FieldType[FieldCount];
 
 <#
-    for (int i = 0; i < FieldCount; ++i)
+    for (int i = 0; i < NumberOfFields; ++i)
     {
 #>
             fields[<#= i #>] = _field<#= i #>;
@@ -224,11 +222,11 @@ namespace BitMasks
     }
 #>
 
-            for (int i = 0; i < MaskDataSize; ++i)
+            for (int i = 0; i < FieldCount; ++i)
             {
                 var binaryString = Convert.ToString((long) fields[i], 2);
 
-                builder.Append(binaryString.PadLeft(BitsPerData, '0'));
+                builder.Append(binaryString.PadLeft(BitsPerField, '0'));
             }
 
             return builder.ToString();

@@ -8,8 +8,6 @@ using BitMasks;
 
 namespace Benchmark
 {
-    using BitMask = BitMask128;
-
     using IntType = UInt64;
 
     public class BenchmarkImplementation

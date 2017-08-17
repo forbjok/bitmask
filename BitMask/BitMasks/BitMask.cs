@@ -8,22 +8,22 @@ using System.Threading.Tasks;
 
 namespace BitMasks
 {
-    using DataType = UInt64;
+    using FieldType = UInt64;
 
-    public struct BitMask128 : IEquatable<BitMask128>
+    public struct BitMask : IEquatable<BitMask>
     {
-        public static readonly BitMask128 None = new BitMask128(bits: new int[0]);
+        public static readonly BitMask None = new BitMask(bits: new int[0]);
 
-        private const int MaskDataSize = 2;
-        private const int BitsPerData = 8 * sizeof(DataType);
-        private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
+        private const int FieldCount = 2;
+        private const int BitsPerField = 8 * sizeof(FieldType);
+        private const int MaxBitIndex = (FieldCount * BitsPerField) - 1;
 
-        public const int BitSize = MaskDataSize * BitsPerData;
+        public const int BitSize = FieldCount * BitsPerField;
 
-        private DataType _field0;
-        private DataType _field1;
+        private FieldType _field0;
+        private FieldType _field1;
 
-        public BitMask128(int[] bits)
+        public BitMask(int[] bits)
         {
             _field0 = 0;
             _field1 = 0;
@@ -35,10 +35,10 @@ namespace BitMasks
                 if (bit < 0 || bit > MaxBitIndex)
                     throw new Exception($"Attempted to set bit #{bit}, but the maximum is {MaxBitIndex}");
 
-                var dataIndex = bit / BitsPerData;
-                var bitIndex = bit % BitsPerData;
+                var dataIndex = bit / BitsPerField;
+                var bitIndex = bit % BitsPerField;
 
-                var mask = (DataType) 1 << bitIndex;
+                var mask = (FieldType) 1 << bitIndex;
 
                 switch (dataIndex)
                 {
@@ -61,15 +61,15 @@ namespace BitMasks
                 if (index < 0 || index > MaxBitIndex)
                     throw new Exception($"Invalid bit index: {index}");
 
-                var dataIndex = index / BitsPerData;
-                var bitIndex = index % BitsPerData;
+                var dataIndex = index / BitsPerField;
+                var bitIndex = index % BitsPerField;
 
                 switch (dataIndex)
                 {
                     case 0:
-                        return (_field0 & ((DataType) 1 << bitIndex)) != 0;
+                        return (_field0 & ((FieldType) 1 << bitIndex)) != 0;
                     case 1:
-                        return (_field1 & ((DataType) 1 << bitIndex)) != 0;
+                        return (_field1 & ((FieldType) 1 << bitIndex)) != 0;
                     default:
                         return false;
                 }
@@ -77,7 +77,7 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(BitMask128 other)
+        public bool Equals(BitMask other)
         {
             if (_field0 != other._field0)
                 return false;
@@ -90,28 +90,28 @@ namespace BitMasks
 
         public override bool Equals(object obj)
         {
-            if (obj is BitMask128)
-                return Equals((BitMask128) obj);
+            if (obj is BitMask)
+                return Equals((BitMask) obj);
 
             return base.Equals(obj);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(BitMask128 mask1, BitMask128 mask2)
+        public static bool operator ==(BitMask mask1, BitMask mask2)
         {
             return mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(BitMask128 mask1, BitMask128 mask2)
+        public static bool operator !=(BitMask mask1, BitMask mask2)
         {
             return !mask1.Equals(mask2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator &(BitMask128 mask1, BitMask128 mask2)
+        public static BitMask operator &(BitMask mask1, BitMask mask2)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask();
 
             newBitMask._field0 = mask1._field0 & mask2._field0;
             newBitMask._field1 = mask1._field1 & mask2._field1;
@@ -120,9 +120,9 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator |(BitMask128 mask1, BitMask128 mask2)
+        public static BitMask operator |(BitMask mask1, BitMask mask2)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask();
 
             newBitMask._field0 = mask1._field0 | mask2._field0;
             newBitMask._field1 = mask1._field1 | mask2._field1;
@@ -131,9 +131,9 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BitMask128 operator ~(BitMask128 mask)
+        public static BitMask operator ~(BitMask mask)
         {
-            var newBitMask = new BitMask128();
+            var newBitMask = new BitMask();
 
             newBitMask._field0 = ~mask._field0;
             newBitMask._field1 = ~mask._field1;
@@ -142,7 +142,7 @@ namespace BitMasks
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Has(BitMask128 mask)
+        public bool Has(BitMask mask)
         {
             if ((_field0 & mask._field0) != mask._field0)
                 return false;
@@ -157,16 +157,16 @@ namespace BitMasks
         {
             var builder = new StringBuilder();
 
-            var fields = new DataType[MaskDataSize];
+            var fields = new FieldType[FieldCount];
 
             fields[0] = _field0;
             fields[1] = _field1;
 
-            for (int i = 0; i < MaskDataSize; ++i)
+            for (int i = 0; i < FieldCount; ++i)
             {
                 var binaryString = Convert.ToString((long) fields[i], 2);
 
-                builder.Append(binaryString.PadLeft(BitsPerData, '0'));
+                builder.Append(binaryString.PadLeft(BitsPerField, '0'));
             }
 
             return builder.ToString();

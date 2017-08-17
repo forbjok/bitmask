@@ -7,8 +7,6 @@ using Xunit;
 
 namespace BitMasks.Tests
 {
-    using BitMask = BitMask128;
-
     public class BitMaskTests
     {
         [Fact]
