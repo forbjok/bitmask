@@ -45,10 +45,16 @@ namespace BitMasks
         {
             fixed (DataType* data = _data)
             {
+                DataType* dataPtr = data;
+                DataType* otherDataPtr = other._data;
+
                 for (int i = 0; i < MaskDataSize; ++i)
                 {
-                    if (data[i] != other._data[i])
+                    if (*dataPtr != *otherDataPtr)
                         return false;
+
+                    ++dataPtr;
+                    ++otherDataPtr;
                 }
             }
 
