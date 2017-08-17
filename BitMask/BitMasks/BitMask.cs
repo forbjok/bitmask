@@ -16,6 +16,7 @@ namespace BitMasks
 
         private const int MaskDataSize = 1;
         private const int BitsPerData = 8 * sizeof(DataType);
+        private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
 
         private fixed DataType _data[MaskDataSize];
 
@@ -26,6 +27,9 @@ namespace BitMasks
                 for (int i = 0; i < bits.Length; ++i)
                 {
                     ref var bit = ref bits[i];
+
+                    if (bit < 0 || bit > MaxBitIndex)
+                        throw new Exception($"Attempted to set bit #{bit}, but the maximum is {MaxBitIndex}");
 
                     var dataIndex = bit / BitsPerData;
                     var bitIndex = bit % BitsPerData;
