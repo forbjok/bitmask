@@ -10,7 +10,7 @@ namespace BitMasks
 {
     using DataType = UInt64;
 
-    public unsafe struct BitMask : IEquatable<BitMask>
+    public struct BitMask : IEquatable<BitMask>
     {
         public static readonly BitMask None = new BitMask(bits: new int[0]);
 
@@ -18,25 +18,33 @@ namespace BitMasks
         private const int BitsPerData = 8 * sizeof(DataType);
         private const int MaxBitIndex = (MaskDataSize * BitsPerData) - 1;
 
-        private fixed DataType _data[MaskDataSize];
+        public const int BitSize = MaskDataSize * BitsPerData;
+
+        private DataType _field0;
 
         public BitMask(int[] bits)
         {
-            fixed (DataType* data = _data)
+            _field0 = 0;
+
+            for (int i = 0; i < bits.Length; ++i)
             {
-                for (int i = 0; i < bits.Length; ++i)
+                ref var bit = ref bits[i];
+
+                if (bit < 0 || bit > MaxBitIndex)
+                    throw new Exception($"Attempted to set bit #{bit}, but the maximum is {MaxBitIndex}");
+
+                var dataIndex = bit / BitsPerData;
+                var bitIndex = bit % BitsPerData;
+
+                var mask = (DataType) 1 << bitIndex;
+
+                switch (dataIndex)
                 {
-                    ref var bit = ref bits[i];
-
-                    if (bit < 0 || bit > MaxBitIndex)
-                        throw new Exception($"Attempted to set bit #{bit}, but the maximum is {MaxBitIndex}");
-
-                    var dataIndex = bit / BitsPerData;
-                    var bitIndex = bit % BitsPerData;
-
-                    var mask = (DataType) 1 << bitIndex;
-
-                    data[dataIndex] |= mask;
+                    case 0:
+                        _field0 |= mask;
+                        break;
+                    default:
+                        throw new Exception($"Nonexistent field: {dataIndex}");
                 }
             }
         }
@@ -51,9 +59,12 @@ namespace BitMasks
                 var dataIndex = index / BitsPerData;
                 var bitIndex = index % BitsPerData;
 
-                fixed (DataType* data = _data)
+                switch (dataIndex)
                 {
-                    return (data[dataIndex] & ((DataType) 1 << bitIndex)) != 0;
+                    case 0:
+                        return (_field0 & ((DataType) 1 << bitIndex)) != 0;
+                    default:
+                        return false;
                 }
             }
         }
@@ -61,20 +72,8 @@ namespace BitMasks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(BitMask other)
         {
-            fixed (DataType* data = _data)
-            {
-                DataType* dataPtr = data;
-                DataType* otherDataPtr = other._data;
-
-                for (int i = 0; i < MaskDataSize; ++i)
-                {
-                    if (*dataPtr != *otherDataPtr)
-                        return false;
-
-                    ++dataPtr;
-                    ++otherDataPtr;
-                }
-            }
+            if (_field0 != other._field0)
+                return false;
 
             return true;
         }
@@ -104,18 +103,7 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            DataType* newData = newBitMask._data;
-            DataType* mask1Data = mask1._data;
-            DataType* mask2Data = mask2._data;
-
-            for (int i = 0; i < MaskDataSize; ++i)
-            {
-                *newData = *mask1Data & *mask2Data;
-
-                ++newData;
-                ++mask1Data;
-                ++mask2Data;
-            }
+            newBitMask._field0 = mask1._field0 & mask2._field0;
 
             return newBitMask;
         }
@@ -125,18 +113,7 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            DataType* newData = newBitMask._data;
-            DataType* mask1Data = mask1._data;
-            DataType* mask2Data = mask2._data;
-
-            for (int i = 0; i < MaskDataSize; ++i)
-            {
-                *newData = *mask1Data | *mask2Data;
-
-                ++newData;
-                ++mask1Data;
-                ++mask2Data;
-            }
+            newBitMask._field0 = mask1._field0 | mask2._field0;
 
             return newBitMask;
         }
@@ -146,16 +123,7 @@ namespace BitMasks
         {
             var newBitMask = new BitMask();
 
-            DataType* newData = newBitMask._data;
-            DataType* maskData = mask._data;
-
-            for (int i = 0; i < MaskDataSize; ++i)
-            {
-                *newData = ~*maskData;
-
-                ++newData;
-                ++maskData;
-            }
+            newBitMask._field0 = ~mask._field0;
 
             return newBitMask;
         }
@@ -163,20 +131,8 @@ namespace BitMasks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Has(BitMask mask)
         {
-            fixed (DataType* data = _data)
-            {
-                DataType* myData = data;
-                DataType* maskData = mask._data;
-
-                for (int i = 0; i < MaskDataSize; ++i)
-                {
-                    if ((*myData & *maskData) != *maskData)
-                        return false;
-
-                    ++myData;
-                    ++maskData;
-                }
-            }
+            if ((_field0 & mask._field0) != mask._field0)
+                return false;
 
             return true;
         }
@@ -185,14 +141,15 @@ namespace BitMasks
         {
             var builder = new StringBuilder();
 
-            fixed (DataType* data = _data)
-            {
-                for (int i = 0; i < MaskDataSize; ++i)
-                {
-                    var binaryString = Convert.ToString((long) data[i], 2);
+            var fields = new DataType[MaskDataSize];
 
-                    builder.Append(binaryString.PadLeft(BitsPerData * MaskDataSize, '0'));
-                }
+            fields[0] = _field0;
+
+            for (int i = 0; i < MaskDataSize; ++i)
+            {
+                var binaryString = Convert.ToString((long) fields[i], 2);
+
+                builder.Append(binaryString.PadLeft(BitsPerData, '0'));
             }
 
             return builder.ToString();
